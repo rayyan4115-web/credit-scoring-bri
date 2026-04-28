@@ -1,0 +1,183 @@
+
+<h2 class="sr-only">Sistem Credit Scoring BRI — Kalkulator interaktif untuk menentukan kelayakan kredit mikro digital dengan skor berbobot 6 variabel</h2>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: 10px; }
+.var-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-bottom: 8px; }
+.var-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.var-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.var-weight { font-size: 12px; color: var(--color-text-secondary); background: var(--color-background-secondary); border-radius: 20px; padding: 2px 10px; border: 0.5px solid var(--color-border-tertiary); }
+.score-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-secondary); color: var(--color-text-secondary); transition: all 0.15s; }
+.pill:hover { border-color: var(--color-border-secondary); }
+.pill.selected-1 { background: #FCEBEB; border-color: #F09595; color: #791F1F; }
+.pill.selected-2 { background: #FAEEDA; border-color: #EF9F27; color: #633806; }
+.pill.selected-3 { background: #E6F1FB; border-color: #85B7EB; color: #0C447C; }
+.pill.selected-4 { background: #EAF3DE; border-color: #97C459; color: #27500A; }
+.pill.selected-5 { background: #E1F5EE; border-color: #5DCAA5; color: #085041; }
+.result-panel { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 20px; margin-top: 16px; }
+.score-meter { position: relative; height: 12px; border-radius: 6px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); overflow: hidden; margin: 12px 0; }
+.score-fill { height: 100%; border-radius: 6px; transition: width 0.4s ease, background 0.4s ease; }
+.score-zones { display: flex; font-size: 10px; color: var(--color-text-tertiary); justify-content: space-between; margin-bottom: 4px; }
+.decision-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+.badge-approve { background: #E1F5EE; color: #085041; border: 0.5px solid #5DCAA5; }
+.badge-review { background: #E6F1FB; color: #0C447C; border: 0.5px solid #85B7EB; }
+.badge-reject { background: #FCEBEB; color: #791F1F; border: 0.5px solid #F09595; }
+.score-big { font-size: 36px; font-weight: 500; line-height: 1; color: var(--color-text-primary); }
+.score-max { font-size: 16px; color: var(--color-text-tertiary); }
+.breakdown-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 5px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-label { color: var(--color-text-secondary); }
+.breakdown-val { font-weight: 500; color: var(--color-text-primary); }
+.npl-box { margin-top: 14px; padding: 12px 14px; background: var(--color-background-primary); border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); }
+.npl-title { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.tradeoff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.tradeoff-card { padding: 10px 12px; border-radius: var(--border-radius-md); font-size: 12px; }
+.tradeoff-loose { background: #FAEEDA; border: 0.5px solid #EF9F27; color: #633806; }
+.tradeoff-tight { background: #FCEBEB; border: 0.5px solid #F09595; color: #791F1F; }
+.tradeoff-head { font-weight: 500; font-size: 13px; margin-bottom: 4px; }
+</style>
+
+<div style="padding: 1rem 0;">
+
+<div style="display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,0.9fr); gap: 16px; align-items: start;">
+
+<div>
+<p class="section-label">Input variabel debitur</p>
+
+<div id="vars"></div>
+
+</div>
+
+<div>
+<p class="section-label">Hasil penilaian</p>
+
+<div class="result-panel">
+  <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 2px;">
+    <span class="score-big" id="total-score">0</span>
+    <span class="score-max">/ 100</span>
+  </div>
+  <div id="decision-badge" class="decision-badge badge-reject" style="margin: 8px 0 12px;">— belum dinilai</div>
+
+  <div class="score-zones">
+    <span>Reject &lt;60</span><span>Review 60–80</span><span>Approve &gt;80</span>
+  </div>
+  <div class="score-meter">
+    <div id="score-fill" class="score-fill" style="width:0%; background:#E24B4A;"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--color-text-tertiary); margin-bottom: 14px;">
+    <span>0</span><span>60</span><span>80</span><span>100</span>
+  </div>
+
+  <p class="section-label" style="margin-top: 4px;">Rincian skor</p>
+  <div id="breakdown"></div>
+
+  <div class="npl-box">
+    <p class="npl-title">Proyeksi dampak keputusan</p>
+    <div id="npl-impact" style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.6;">Pilih skor untuk setiap variabel untuk melihat proyeksi.</div>
+  </div>
+</div>
+
+<div class="tradeoff-grid">
+  <div class="tradeoff-card tradeoff-loose">
+    <div class="tradeoff-head">Cutoff longgar</div>
+    Approval lebih tinggi, NPL bisa melampaui target 3%. Risiko kredit macet meningkat.
+  </div>
+  <div class="tradeoff-card tradeoff-tight">
+    <div class="tradeoff-head">Cutoff ketat</div>
+    NPL terkendali, namun approval rendah. Peluang bisnis terlewat.
+  </div>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+const variables = [
+  { id: 'omzet', label: 'Omzet usaha', weight: 0.25, levels: ['Sangat kecil','Kecil','Sedang','Besar','Sangat besar'] },
+  { id: 'lama', label: 'Lama usaha', weight: 0.20, levels: ['< 6 bulan','6–12 bulan','1–2 tahun','2–5 tahun','> 5 tahun'] },
+  { id: 'riwayat', label: 'Riwayat pembayaran', weight: 0.25, levels: ['Macet berat','Sering telat','Kadang telat','Hampir tepat','Selalu tepat'] },
+  { id: 'frekuensi', label: 'Frekuensi transaksi', weight: 0.15, levels: ['Sangat jarang','Jarang','Cukup','Sering','Sangat sering'] },
+  { id: 'lokasi', label: 'Lokasi usaha', weight: 0.05, levels: ['Sangat terpencil','Terpencil','Pinggiran','Semi-urban','Urban strategis'] },
+  { id: 'agunan', label: 'Agunan ringan', weight: 0.10, levels: ['Tidak ada','Sangat minim','Ada sebagian','Cukup','Memadai'] },
+];
+
+const state = {};
+variables.forEach(v => state[v.id] = 0);
+
+const container = document.getElementById('vars');
+variables.forEach(v => {
+  const card = document.createElement('div');
+  card.className = 'var-card';
+  card.innerHTML = `
+    <div class="var-header">
+      <span class="var-name">${v.label}</span>
+      <span class="var-weight">Bobot ${Math.round(v.weight*100)}%</span>
+    </div>
+    <div class="score-pills" id="pills-${v.id}">
+      ${v.levels.map((l,i) => `<span class="pill" data-var="${v.id}" data-score="${i+1}">${i+1} — ${l}</span>`).join('')}
+    </div>`;
+  container.appendChild(card);
+});
+
+document.querySelectorAll('.pill').forEach(pill => {
+  pill.addEventListener('click', function() {
+    const varId = this.dataset.var;
+    const score = parseInt(this.dataset.score);
+    state[varId] = score;
+    document.querySelectorAll(`.pill[data-var="${varId}"]`).forEach(p => {
+      p.className = 'pill';
+      if (parseInt(p.dataset.score) === score) p.classList.add(`selected-${score}`);
+    });
+    update();
+  });
+});
+
+function update() {
+  let total = 0;
+  const rows = variables.map(v => {
+    const s = state[v.id];
+    const contrib = s * v.weight * 20;
+    total += contrib;
+    return { label: v.label, score: s, contrib: contrib.toFixed(1) };
+  });
+
+  const rounded = Math.round(total);
+  document.getElementById('total-score').textContent = rounded;
+
+  const fill = document.getElementById('score-fill');
+  fill.style.width = total + '%';
+
+  let decision, badgeClass, fillColor;
+  if (rounded > 80) { decision = '✓ Approve'; badgeClass = 'badge-approve'; fillColor = '#1D9E75'; }
+  else if (rounded >= 60) { decision = '⚬ Review manual'; badgeClass = 'badge-review'; fillColor = '#378ADD'; }
+  else { decision = '✕ Reject'; badgeClass = 'badge-reject'; fillColor = '#E24B4A'; }
+
+  const badge = document.getElementById('decision-badge');
+  badge.textContent = decision;
+  badge.className = 'decision-badge ' + badgeClass;
+  fill.style.background = fillColor;
+
+  const bd = document.getElementById('breakdown');
+  bd.innerHTML = rows.map(r => `
+    <div class="breakdown-row">
+      <span class="breakdown-label">${r.label}</span>
+      <span class="breakdown-val">${r.score > 0 ? r.score + '/5 → ' + r.contrib + ' pt' : '—'}</span>
+    </div>`).join('');
+
+  const npl = document.getElementById('npl-impact');
+  const allFilled = variables.every(v => state[v.id] > 0);
+  if (!allFilled) {
+    npl.textContent = 'Lengkapi semua variabel untuk melihat proyeksi.';
+    return;
+  }
+  const approvalRate = rounded > 80 ? 'tinggi (estimasi ~75–85%)' : rounded >= 60 ? 'sedang (~40–60% manual)' : 'rendah';
+  const nplRisk = rounded > 80 ? 'Rendah — mendekati target NPL 3%' : rounded >= 60 ? 'Sedang — perlu analisis tambahan' : 'Tinggi — berpotensi melampaui NPL 3%';
+  npl.innerHTML = `<strong style="color: var(--color-text-primary)">Kemungkinan approval:</strong> ${approvalRate}<br><strong style="color: var(--color-text-primary)">Estimasi risiko NPL:</strong> ${nplRisk}`;
+}
+
+update();
+</script>
